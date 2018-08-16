@@ -9,8 +9,8 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/qor/qor/test/utils"
-	"github.com/qor/validations"
+	"github.com/aghape/aghape/test/utils"
+	"github.com/aghape/validations"
 )
 
 var db *gorm.DB
@@ -37,7 +37,7 @@ func (user *User) Validate(db *gorm.DB) {
 		return false
 	}))
 	if user.Name == "invalid" {
-		db.AddError(validations.NewError(user, "Name", "invalid user name"))
+		db.AddError(validations.Failed(user, "Name", "invalid user name"))
 	}
 }
 
@@ -60,7 +60,7 @@ type CreditCard struct {
 
 func (card *CreditCard) Validate(db *gorm.DB) {
 	if !regexp.MustCompile("^(\\d){13,16}$").MatchString(card.Number) {
-		db.AddError(validations.NewError(card, "Number", "invalid card number"))
+		db.AddError(validations.Failed(card, "Number", "invalid card number"))
 	}
 }
 
@@ -72,7 +72,7 @@ type Address struct {
 
 func (address *Address) Validate(db *gorm.DB) {
 	if address.Address == "invalid" {
-		db.AddError(validations.NewError(address, "Address", "invalid address"))
+		db.AddError(validations.Failed(address, "Address", "invalid address"))
 	}
 }
 
@@ -83,7 +83,7 @@ type Language struct {
 
 func (language *Language) Validate(db *gorm.DB) error {
 	if language.Code == "invalid" {
-		return validations.NewError(language, "Code", "invalid language")
+		return validations.Failed(language, "Code", "invalid language")
 	}
 	return nil
 }

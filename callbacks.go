@@ -9,6 +9,42 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// NewError generate a new error for a model's field
+func Failed(resource interface{}, column, err string, path ...string) error {
+	if len(path) == 0 {
+		path = []string{""}
+	}
+	return &ValidationFailed{Resource: resource, Column: column, Message: err, Path: path[0]}
+}
+
+// NewError generate a new error for a model's field
+func FieldFailed(resource interface{}, fieldName, err string, path ...string) error {
+	if len(path) == 0 {
+		path = []string{""}
+	}
+	return &ValidationFailed{Resource: resource, FieldName: fieldName, Message: err, Path: path[0]}
+}
+
+// Error is a validation error struct that hold model, column and error message
+type ValidationFailed struct {
+	Resource  interface{}
+	Column    string
+	FieldName string
+	Message   string
+	Path      string
+}
+
+// Label is a label including model type, primary key and column name
+func (err ValidationFailed) Label() string {
+	scope := gorm.Scope{Value: err.Resource}
+	return fmt.Sprintf("%v_%v_%v", scope.GetModelStruct().ModelType.Name(), scope.PrimaryKeyValue(), err.Column)
+}
+
+// Error show error message
+func (err ValidationFailed) Error() string {
+	return err.Message
+}
+
 var skipValidations = "validations:skip_validations"
 
 func validate(scope *gorm.Scope) {
@@ -63,13 +99,28 @@ func formattedError(err govalidator.Error, resource interface{}) error {
 	} else if strings.Index(message, "as email") >= 0 {
 		message = fmt.Sprintf("%v is not a valid email address", attrName)
 	}
-	return NewError(resource, attrName, message)
+	return FieldFailed(resource, attrName, message)
 
 }
 
+var VALIDATE_CALLBACK = PREFIX + ":validate"
+
 // RegisterCallbacks register callback into GORM DB
-func RegisterCallbacks(db *gorm.DB) {
-	callback := db.Callback()
-	callback.Create().Before("gorm:before_create").Register("validations:validate", validate)
-	callback.Update().Before("gorm:before_update").Register("validations:validate", validate)
+func RegisterCallbacks(db *gorm.DB) *gorm.DB {
+	db.Callback().Create().Before("gorm:before_create").Register(VALIDATE_CALLBACK, validate)
+	db.Callback().Update().Before("gorm:before_update").Register(VALIDATE_CALLBACK, validate)
+	return db.Set(VALIDATE_CALLBACK, true)
+}
+
+func RegisteredCallbacks(db *gorm.DB) bool {
+	if _, ok := db.Get(VALIDATE_CALLBACK); ok {
+		return true
+	}
+	return false
+}
+
+func RegisteredCallbacksOrError(db *gorm.DB) {
+	if !RegisteredCallbacks(db) {
+		panic(fmt.Errorf("%v: callbacks does not registered.", VALIDATE_CALLBACK))
+	}
 }
