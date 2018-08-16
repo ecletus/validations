@@ -1,6 +1,6 @@
 # Validations
 
-Validations provides a means to validate [GORM-backend](https://github.com/jinzhu/gorm) models when creating and updating them.
+Validations provides a means to validate [GORM-backend](https://github.com/moisespsena-go/aorm) models when creating and updating them.
 
 ## Documentation
 

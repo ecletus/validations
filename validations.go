@@ -3,7 +3,7 @@ package validations
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"github.com/moisespsena-go/aorm"
 )
 
 // NewError generate a new error for a model's field
@@ -20,7 +20,7 @@ type Error struct {
 
 // Label is a label including model type, primary key and column name
 func (err Error) Label() string {
-	scope := gorm.Scope{Value: err.Resource}
+	scope := aorm.Scope{Value: err.Resource}
 	return fmt.Sprintf("%v_%v_%v", scope.GetModelStruct().ModelType.Name(), scope.PrimaryKeyValue(), err.Column)
 }
 

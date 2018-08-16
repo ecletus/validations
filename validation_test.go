@@ -7,16 +7,16 @@ import (
 	"testing"
 
 	"github.com/asaskevich/govalidator"
-	"github.com/jinzhu/gorm"
+	"github.com/moisespsena-go/aorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/aghape/aghape/test/utils"
 	"github.com/aghape/validations"
 )
 
-var db *gorm.DB
+var db *aorm.DB
 
 type User struct {
-	gorm.Model
+	aorm.Model
 	Name           string `valid:"required"`
 	Password       string `valid:"length(6|20)"`
 	SecurePassword string `valid:"numeric"`
@@ -28,7 +28,7 @@ type User struct {
 	Languages      []Language `gorm:"many2many:user_languages"`
 }
 
-func (user *User) Validate(db *gorm.DB) {
+func (user *User) Validate(db *aorm.DB) {
 	govalidator.CustomTypeTagMap.Set("uniqEmail", govalidator.CustomTypeValidator(func(email interface{}, context interface{}) bool {
 		var count int
 		if db.Model(&User{}).Where("email = ?", email).Count(&count); count == 0 || email == "" {
@@ -42,46 +42,46 @@ func (user *User) Validate(db *gorm.DB) {
 }
 
 type Company struct {
-	gorm.Model
+	aorm.Model
 	Name string
 }
 
-func (company *Company) Validate(db *gorm.DB) {
+func (company *Company) Validate(db *aorm.DB) {
 	if company.Name == "invalid" {
 		db.AddError(errors.New("invalid company name"))
 	}
 }
 
 type CreditCard struct {
-	gorm.Model
+	aorm.Model
 	UserID int
 	Number string
 }
 
-func (card *CreditCard) Validate(db *gorm.DB) {
+func (card *CreditCard) Validate(db *aorm.DB) {
 	if !regexp.MustCompile("^(\\d){13,16}$").MatchString(card.Number) {
 		db.AddError(validations.Failed(card, "Number", "invalid card number"))
 	}
 }
 
 type Address struct {
-	gorm.Model
+	aorm.Model
 	UserID  int
 	Address string
 }
 
-func (address *Address) Validate(db *gorm.DB) {
+func (address *Address) Validate(db *aorm.DB) {
 	if address.Address == "invalid" {
 		db.AddError(validations.Failed(address, "Address", "invalid address"))
 	}
 }
 
 type Language struct {
-	gorm.Model
+	aorm.Model
 	Code string
 }
 
-func (language *Language) Validate(db *gorm.DB) error {
+func (language *Language) Validate(db *aorm.DB) error {
 	if language.Code == "invalid" {
 		return validations.Failed(language, "Code", "invalid language")
 	}
