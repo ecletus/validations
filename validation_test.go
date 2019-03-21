@@ -9,8 +9,8 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/moisespsena-go/aorm"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/aghape/core/test/utils"
-	"github.com/aghape/validations"
+	"github.com/ecletus/core/test/utils"
+	"github.com/ecletus/validations"
 )
 
 var db *aorm.DB
