@@ -36,8 +36,8 @@ type ValidationFailed struct {
 
 // Label is a label including model type, primary key and column name
 func (err ValidationFailed) Label() string {
-	scope := aorm.Scope{Value: err.Resource}
-	return fmt.Sprintf("%v_%v_%v", scope.GetModelStruct().ModelType.Name(), scope.PrimaryKeyValue(), err.Column)
+	struc := aorm.StructOf(err.Resource)
+	return fmt.Sprintf("%v_%s_%v", struc.Type.Name(), struc.GetID(err.Resource), err.Column)
 }
 
 // Error show error message
